@@ -31,6 +31,7 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-config-client'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
+	implementation 'com.google.firebase:firebase-admin:9.2.0'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
