@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: notification-service
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mybrary_notification
+    username: ${DB_USERNAME}
+    password : ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 1000
+
+    open-in-view: false
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  cloud:
+    config:
+      enabled: false
