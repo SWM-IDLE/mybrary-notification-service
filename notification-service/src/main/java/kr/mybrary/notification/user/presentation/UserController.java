@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/register-device-token")
+    @PostMapping("/device-token")
     public ResponseEntity<SuccessResponse<Void>> registerDeviceToken(
             @RequestHeader("USER-ID") String loginId,
             @RequestBody UserDeviceTokenRegisterRequest request) {
