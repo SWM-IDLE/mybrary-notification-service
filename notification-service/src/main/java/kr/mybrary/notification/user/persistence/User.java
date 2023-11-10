@@ -1,4 +1,4 @@
-package kr.mybrary.notification.notification.persistence;
+package kr.mybrary.notification.user.persistence;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,4 +26,8 @@ public class User {
 
     @Unique
     private String userDeviceToken;
+
+    public void updateUserDeviceToken(String userDeviceToken) {
+        this.userDeviceToken = userDeviceToken;
+    }
 }

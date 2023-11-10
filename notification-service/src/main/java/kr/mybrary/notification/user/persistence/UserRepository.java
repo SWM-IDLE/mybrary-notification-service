@@ -1,7 +1,6 @@
-package kr.mybrary.notification.notification.persistence.repository;
+package kr.mybrary.notification.user.persistence;
 
 import java.util.Optional;
-import kr.mybrary.notification.notification.persistence.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {
