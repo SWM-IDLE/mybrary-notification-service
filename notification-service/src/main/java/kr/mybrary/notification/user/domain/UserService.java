@@ -1,5 +1,6 @@
 package kr.mybrary.notification.user.domain;
 
+import java.util.List;
 import kr.mybrary.notification.notification.domain.exception.UserNotFoundException;
 import kr.mybrary.notification.user.domain.dto.request.UserDeviceTokenRegisterServiceRequest;
 import kr.mybrary.notification.user.persistence.User;
@@ -20,6 +21,15 @@ public class UserService {
     @Transactional(readOnly = true)
     public User findByUserToken(String userToken) {
         return userRepository.findByUserToken(userToken).orElseThrow(UserNotFoundException::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> findAllUserDeviceToken() {
+        return userRepository.findAll()
+                .stream()
+                .filter(user -> user.getUserDeviceToken() != null && !user.getUserDeviceToken().isEmpty())
+                .map(User::getUserDeviceToken)
+                .toList();
     }
 
     public void registerUserDeviceToken(UserDeviceTokenRegisterServiceRequest request) {

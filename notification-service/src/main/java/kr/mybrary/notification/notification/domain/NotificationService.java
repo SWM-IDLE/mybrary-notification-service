@@ -3,13 +3,19 @@ package kr.mybrary.notification.notification.domain;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
-import kr.mybrary.notification.notification.domain.exception.UserNotFoundException;
-import kr.mybrary.notification.notification.persistence.User;
-import kr.mybrary.notification.notification.persistence.repository.UserRepository;
-import kr.mybrary.notification.notification.domain.dto.NotificationSendServiceRequest;
+import io.awspring.cloud.sqs.annotation.SqsListener;
+import java.util.List;
+import java.util.Map;
+import kr.mybrary.notification.notification.domain.dto.request.NotificationSendToAllServiceRequest;
+import kr.mybrary.notification.user.domain.UserService;
+import kr.mybrary.notification.user.persistence.User;
+import kr.mybrary.notification.notification.domain.dto.request.NotificationSendServiceRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.Headers;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,14 +26,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
     private final FirebaseMessaging firebaseMessaging;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Transactional(readOnly = true)
-    public void sendNotificationByToken(NotificationSendServiceRequest request) {
+    @SqsListener(value = "${cloud.aws.sqs.queue.name}")
+    public void sendNotificationByToken(@Payload NotificationSendServiceRequest request, @Headers Map<String, String> headers) {
 
         String userToken = request.getTargetUserToken();
-        User user = userRepository.findByUserToken(userToken)
-                .orElseThrow(UserNotFoundException::new);
+        User user = userService.findByUserToken(userToken);
 
         if (user.getUserDeviceToken() != null) {
             Notification notification = createNotification(request);
@@ -43,6 +49,28 @@ public class NotificationService {
 
         } else {
             log.error("서버에 유저의 FirebaseToken이 존재하지 않습니다. targetUserId = {}", userToken);
+        }
+    }
+
+    public void sendNotificationAllUser(NotificationSendToAllServiceRequest request) {
+
+        List<String> allUserDeviceToken = userService.findAllUserDeviceToken();
+
+        Notification notification = Notification.builder()
+                .setTitle(request.getTitle())
+                .setBody(request.getBody())
+                .build();
+
+        MulticastMessage message = MulticastMessage.builder()
+                .setNotification(notification)
+                .addAllTokens(allUserDeviceToken)
+                .build();
+
+        try {
+            firebaseMessaging.sendEachForMulticast(message);
+        } catch (FirebaseMessagingException e) {
+            e.printStackTrace();
+            log.error("알림 보내기를 실패하였습니다.");
         }
     }
 

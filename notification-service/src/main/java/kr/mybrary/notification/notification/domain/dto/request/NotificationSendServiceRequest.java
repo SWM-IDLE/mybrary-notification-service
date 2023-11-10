@@ -1,4 +1,4 @@
-package kr.mybrary.notification.notification.domain.dto;
+package kr.mybrary.notification.notification.domain.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
