@@ -8,10 +8,10 @@ import com.google.firebase.messaging.Notification;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import java.util.List;
 import java.util.Map;
+import kr.mybrary.notification.notification.domain.dto.message.FollowRequestMessage;
 import kr.mybrary.notification.notification.domain.dto.request.NotificationSendToAllServiceRequest;
 import kr.mybrary.notification.user.domain.UserService;
 import kr.mybrary.notification.user.persistence.User;
-import kr.mybrary.notification.notification.domain.dto.request.NotificationSendServiceRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Headers;
@@ -29,22 +29,26 @@ public class NotificationService {
     private final UserService userService;
 
     @Transactional(readOnly = true)
-    @SqsListener(value = "${cloud.aws.sqs.queue.name}")
-    public void sendNotificationByToken(@Payload NotificationSendServiceRequest request, @Headers Map<String, String> headers) {
+    @SqsListener(value = "${cloud.aws.sqs.queue.follow}")
+    public void notifyFollowRequest(@Payload FollowRequestMessage request, @Headers Map<String, String> headers) {
 
-        String userToken = request.getTargetUserToken();
+        String userToken = request.getSourceUserId();
         User user = userService.findByUserToken(userToken);
 
         if (user.getUserDeviceToken() != null) {
-            Notification notification = createNotification(request);
+
+            Notification notification = Notification.builder()
+                    .setTitle("팔로우 요청이 왔습니다.")
+                    .setBody(String.format("%s님이 팔로우를 요청했습니다.", request.getTargetUserNickname()))
+                    .build();
             Message message = createMessage(user, notification);
 
             try {
                 firebaseMessaging.send(message);
-                log.info("알림을 성공적으로 전송했습니다. targetUserId = {}", userToken);
+                log.info("팔로우 알림을 성공적으로 전송했습니다. targetUserId = {}", userToken);
             } catch (FirebaseMessagingException e) {
                 e.printStackTrace();
-                log.error("알림 보내기를 실패하였습니다. targetUserId = {}", userToken);
+                log.error("팔로우 알림 보내기를 실패하였습니다. targetUserId = {}", userToken);
             }
 
         } else {
@@ -81,10 +85,4 @@ public class NotificationService {
                 .build();
     }
 
-    private Notification createNotification(NotificationSendServiceRequest dto) {
-        return Notification.builder()
-                .setTitle(dto.getTitle())
-                .setBody(dto.getBody())
-                .build();
-    }
 }

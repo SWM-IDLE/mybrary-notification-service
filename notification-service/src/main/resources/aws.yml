@@ -16,4 +16,4 @@ cloud:
 
     sqs:
       queue:
-        name: ${AWS_SQS_QUEUE_NAME}
+        follow: ${AWS_SQS_QUEUE_NAME}
