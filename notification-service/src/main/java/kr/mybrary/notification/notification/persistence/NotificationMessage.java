@@ -1,4 +1,4 @@
-package kr.mybrary.notification.user.persistence;
+package kr.mybrary.notification.notification.persistence;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,26 +9,21 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.checkerframework.common.aliasing.qual.Unique;
 
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class User extends BaseEntity {
+public class NotificationMessage extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Unique
-    private String userToken;
+    private String userId;
+    private String message;
+    private String sourceUserId;
+    private String type;
 
-    @Unique
-    private String userDeviceToken;
-
-    public void updateUserDeviceToken(String userDeviceToken) {
-        this.userDeviceToken = userDeviceToken;
-    }
 }

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import kr.mybrary.notification.notification.domain.dto.message.FollowRequestMessage;
 import kr.mybrary.notification.notification.domain.dto.request.NotificationSendToAllServiceRequest;
+import kr.mybrary.notification.notification.persistence.NotificationMessage;
+import kr.mybrary.notification.notification.persistence.repository.NotificationMessageRepository;
 import kr.mybrary.notification.user.domain.UserService;
 import kr.mybrary.notification.user.persistence.User;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class NotificationService {
 
     private final FirebaseMessaging firebaseMessaging;
     private final UserService userService;
+    private final NotificationMessageRepository notificationMessageRepository;
 
     @Transactional(readOnly = true)
     @SqsListener(value = "${cloud.aws.sqs.queue.follow}")
@@ -45,6 +48,7 @@ public class NotificationService {
 
             try {
                 firebaseMessaging.send(message);
+                notificationMessageRepository.save(createFollowNotificationMessage(request));
                 log.info("팔로우 알림을 성공적으로 전송했습니다. targetUserId = {}", userToken);
             } catch (FirebaseMessagingException e) {
                 e.printStackTrace();
@@ -54,6 +58,15 @@ public class NotificationService {
         } else {
             log.error("서버에 유저의 FirebaseToken이 존재하지 않습니다. targetUserId = {}", userToken);
         }
+    }
+
+    private static NotificationMessage createFollowNotificationMessage(FollowRequestMessage request) {
+        return NotificationMessage.builder()
+                .userId(request.getSourceUserId())
+                .sourceUserId(request.getSourceUserId())
+                .message(String.format("%s님이 팔로우를 요청했습니다.", request.getTargetUserNickname()))
+                .type("FOLLOW")
+                .build();
     }
 
     public void sendNotificationAllUser(NotificationSendToAllServiceRequest request) {
