@@ -85,10 +85,20 @@ public class NotificationService {
 
         try {
             firebaseMessaging.sendEachForMulticast(message);
+            notificationMessageRepository.save(createNotificationForAllMessage(request));
         } catch (FirebaseMessagingException e) {
             e.printStackTrace();
             log.error("알림 보내기를 실패하였습니다.");
         }
+    }
+
+    private static NotificationMessage createNotificationForAllMessage(NotificationSendToAllServiceRequest request) {
+        return NotificationMessage.builder()
+                .type("ALL")
+                .userId("ALL")
+                .sourceUserId("MYBRARY")
+                .message(request.getBody())
+                .build();
     }
 
     private Message createMessage(User user, Notification notification) {
