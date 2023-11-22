@@ -11,7 +11,6 @@ import java.util.Map;
 import kr.mybrary.notification.notification.domain.dto.message.FollowRequestMessage;
 import kr.mybrary.notification.notification.domain.dto.request.NotificationSendToAllServiceRequest;
 import kr.mybrary.notification.notification.persistence.NotificationMessage;
-import kr.mybrary.notification.notification.persistence.repository.NotificationMessageRepository;
 import kr.mybrary.notification.user.domain.UserService;
 import kr.mybrary.notification.user.persistence.User;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class NotificationService {
 
     private final FirebaseMessaging firebaseMessaging;
     private final UserService userService;
-    private final NotificationMessageRepository notificationMessageRepository;
+    private final NotificationMessageService notificationMessageService;
 
     @Transactional(readOnly = true)
     @SqsListener(value = "${cloud.aws.sqs.queue.follow}")
@@ -48,7 +47,7 @@ public class NotificationService {
 
             try {
                 firebaseMessaging.send(message);
-                notificationMessageRepository.save(createFollowNotificationMessage(request));
+                notificationMessageService.save(createFollowNotificationMessage(request));
                 log.info("팔로우 알림을 성공적으로 전송했습니다. targetUserId = {}", userToken);
             } catch (FirebaseMessagingException e) {
                 e.printStackTrace();
@@ -85,7 +84,7 @@ public class NotificationService {
 
         try {
             firebaseMessaging.sendEachForMulticast(message);
-            notificationMessageRepository.save(createNotificationForAllMessage(request));
+            notificationMessageService.save(createNotificationForAllMessage(request));
         } catch (FirebaseMessagingException e) {
             e.printStackTrace();
             log.error("알림 보내기를 실패하였습니다.");
