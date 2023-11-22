@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class NotificationMessageService {
 
+    private final static String ALL = "ALL";
     private final NotificationMessageRepository notificationMessageRepository;
 
     public void save(NotificationMessage notificationMessage) {
@@ -25,8 +26,8 @@ public class NotificationMessageService {
 
     @Transactional(readOnly = true)
     public NotificationMessageGetByUserIdResponse findAllByUserId(NotificationMessageGetByUserIdServiceRequest request) {
-        List<NotificationMessage> notificationMessages = notificationMessageRepository.findByUserId(
-                request.getUserId());
+        List<NotificationMessage> notificationMessages = notificationMessageRepository.findAllByUserIdOrTypeOrderByCreatedAtDesc(
+                request.getUserId(), ALL);
 
         return NotificationMessageGetByUserIdResponse.builder()
                 .messages(notificationMessages.stream()
