@@ -2,6 +2,9 @@ spring:
   application:
     name: notification-service
 
+  config:
+    import: classpath:aws.yml
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/mybrary_notification
@@ -17,7 +20,6 @@ spring:
         default_batch_fetch_size: 1000
 
     open-in-view: false
-    database-platform: org.hibernate.dialect.H2Dialect
 
   cloud:
     config:
