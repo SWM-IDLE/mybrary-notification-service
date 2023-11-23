@@ -1,7 +1,6 @@
 package kr.mybrary.notification.user.domain;
 
 import java.util.List;
-import kr.mybrary.notification.notification.domain.exception.UserNotFoundException;
 import kr.mybrary.notification.user.domain.dto.request.UserDeviceTokenRegisterServiceRequest;
 import kr.mybrary.notification.user.persistence.User;
 import kr.mybrary.notification.user.persistence.UserRepository;
@@ -18,9 +17,13 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
     public User findByUserToken(String userToken) {
-        return userRepository.findByUserToken(userToken).orElseThrow(UserNotFoundException::new);
+        return userRepository.findByUserToken(userToken).orElseGet(
+                () -> {
+                    log.error("해당 유저를 찾을 수 없습니다. userToken = {}", userToken);
+                    return userRepository.save(User.builder().userToken(userToken).userDeviceToken(null).build());
+                }
+        );
     }
 
     @Transactional(readOnly = true)
